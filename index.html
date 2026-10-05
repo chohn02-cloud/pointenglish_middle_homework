@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2457D6">
+<title>Point 중1 숙제 제출</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F5F6F8; --card:#fff; --line:#E3E6EB; --text:#1A1D23; --sub:#5B6270;
+  --blue:#2457D6; --blue-bg:#E8EEFC; --green:#157347; --green-bg:#E6F4EC;
+  --orange:#B4460B; --orange-bg:#FDF0E7; --red:#C62828; --red-bg:#FFF5F5;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:15px}
+button{font-family:inherit;font-size:inherit;color:inherit}
+.hidden{display:none!important}
+.app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+
+/* 로그인 / 비밀번호 */
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:28px;background:#fff}
+.center h1{margin:0;font-size:26px}
+.kicker{font-size:14px;color:var(--sub)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:500;color:var(--sub)}
+input{height:52px;padding:0 14px;border:1px solid #D5D9E0;border-radius:12px;font-family:inherit;font-size:16px;background:#fff}
+.err{color:var(--orange);font-size:14px;font-weight:500;min-height:1em}
+.big{height:56px;border-radius:12px;border:none;background:var(--blue);color:#fff;font-size:17px;font-weight:700;cursor:pointer;width:100%}
+.big:disabled{background:#C9CFD8;cursor:not-allowed}
+.ghost{height:48px;border-radius:12px;border:1px solid #D5D9E0;background:#fff;color:var(--text);font-size:15px;cursor:pointer;width:100%}
+.warnline{color:var(--orange);font-size:14px;font-weight:500}
+.banner{background:var(--orange-bg);color:var(--orange);padding:12px 16px;font-size:14px;display:flex;flex-direction:column;gap:8px}
+.banner button{align-self:flex-start;height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--orange);background:#fff;color:var(--orange);font-weight:700;cursor:pointer}
+
+/* 앱 */
+.top{height:60px;flex-shrink:0;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:3}
+.top b{font-size:17px;display:block}
+.top span{font-size:12px;color:var(--sub)}
+.top button{height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--sub);font-size:13px;cursor:pointer}
+.content{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:90px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.step{font-size:13px;font-weight:700;color:var(--sub)}
+.seg{display:grid;gap:8px}
+.opt{min-height:52px;border-radius:12px;border:1px solid #D5D9E0;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px;font-weight:700;font-size:16px}
+.opt small{font-size:11px;font-weight:500;color:var(--sub)}
+.opt.on{border:2px solid var(--blue);background:var(--blue-bg);color:var(--blue)}
+.opt.on small{color:var(--blue)}
+.opt:disabled{opacity:.55;cursor:not-allowed}
+.opt .tag{font-size:11px;font-weight:700;color:var(--green)}
+.opt .tag.no{color:var(--sub)}
+.summary{font-size:19px;font-weight:700;text-align:center}
+.summary.muted{color:var(--sub);font-size:15px;font-weight:500}
+
+.rec{align-items:center;text-align:center}
+.mic{width:104px;height:104px;border-radius:50%;border:none;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.mic:disabled{background:#E3E6EB;color:#6B7280;cursor:not-allowed}
+.mic.stop{background:var(--red);animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(198,40,40,.45)}70%{box-shadow:0 0 0 18px rgba(198,40,40,0)}100%{box-shadow:0 0 0 0 rgba(198,40,40,0)}}
+.timer{font-size:30px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums}
+.hint{font-size:13px;color:var(--sub)}
+.meter{width:100%;height:8px;border-radius:4px;background:#E3E6EB;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--green);transition:width .08s}
+audio{width:100%}
+.ok{width:100%;padding:18px;border-radius:14px;background:var(--green-bg);color:var(--green);display:flex;flex-direction:column;align-items:center;gap:6px}
+.ok b{font-size:18px}
+.fail{width:100%;padding:16px;border-radius:14px;background:var(--orange-bg);text-align:left;display:flex;flex-direction:column;gap:4px}
+.fail b{color:var(--orange);font-size:17px}
+.spinner{width:36px;height:36px;border-radius:50%;border:4px solid var(--blue-bg);border-top-color:var(--blue);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 제출 기록 */
+.week h3{margin:0 0 8px;font-size:16px}
+.dayrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #EEF0F3}
+.dayrow:first-of-type{border-top:none}
+.dlabel{width:64px;flex-shrink:0;font-weight:700}
+.dlabel small{display:block;font-weight:400;font-size:12px;color:var(--sub)}
+.stamp{width:44px;height:44px;flex-shrink:0;border-radius:50%;border:2px solid var(--red);background:var(--red-bg);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transform:rotate(-12deg)}
+.stamp.empty{border:2px dashed #D5D9E0;background:transparent;transform:none}
+.dinfo{font-size:14px}
+.dinfo .muted{color:var(--sub)}
+.dinfo .late{color:var(--orange);font-weight:500}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;height:68px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;max-width:480px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom);z-index:4}
+nav.tabs button{border:none;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--sub);cursor:pointer}
+nav.tabs button.on{color:var(--blue);font-weight:700}
+
+.toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);background:#1A1D23;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:90vw;text-align:center}
+.modalbg{position:fixed;inset:0;background:rgba(20,22,28,.5);display:flex;align-items:flex-end;justify-content:center;z-index:15;padding:16px}
+.modal{background:#fff;border-radius:18px;padding:22px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px;margin-bottom:env(safe-area-inset-bottom)}
+.modal h2{margin:0;font-size:19px;line-height:1.4}
+.pending{background:var(--blue-bg);color:var(--blue);border-radius:12px;padding:12px 14px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pending button{height:40px;padding:0 12px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="banner hidden" id="kakaoBanner">
+    <span>카카오톡 안에서는 녹음이 잘 안 될 수 있어요. 크롬이나 사파리로 열어 주세요.</span>
+    <button type="button" id="openExternal">다른 브라우저로 열기</button>
+  </div>
+
+  <!-- 로그인 -->
+  <section class="center hidden" id="scr-login">
+    <div><div class="kicker">Point Speaking · 중1</div><h1>숙제 제출</h1></div>
+    <div class="field"><label for="name">이름</label><input id="name" type="text" autocomplete="username" placeholder="이름을 입력하세요"></div>
+    <div class="field"><label for="pw">비밀번호</label><input id="pw" type="password" inputmode="numeric" autocomplete="current-password" placeholder="비밀번호"></div>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="big" id="loginBtn" type="button">들어가기</button>
+  </section>
+
+  <!-- 비밀번호 변경 -->
+  <section class="center hidden" id="scr-pw">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:14px;color:var(--blue);font-weight:700" id="pwHello"></span>
+      <h1 style="font-size:23px">나만의 비밀번호를 정해요</h1>
+      <span class="kicker">지금 비밀번호(1234)는 처음에 받은 비밀번호예요.</span>
+      <span class="warnline">1234를 그대로 쓰면 다른 친구가 내 이름으로 들어올 수 있어요.</span>
+    </div>
+    <div class="field"><label for="np1">새 비밀번호 (4자리 이상)</label><input id="np1" type="password" inputmode="numeric" autocomplete="new-password"></div>
+    <div class="field"><label for="np2">한 번 더 입력</label><input id="np2" type="password" inputmode="numeric" autocomplete="new-password"></div>
+    <div class="err" id="pwErr" role="alert"></div>
+    <button class="big" id="pwBtn" type="button">비밀번호 정하기</button>
+    <button class="ghost" id="pwSkip" type="button">나중에 바꾸기</button>
+  </section>
+
+  <!-- 앱 -->
+  <section class="hidden" id="scr-app" style="display:flex;flex-direction:column;flex:1">
+    <div class="top">
+      <div><b id="meName"></b><span id="meCls"></span></div>
+      <button type="button" id="logout">로그아웃</button>
+    </div>
+    <div class="content">
+      <div class="pending hidden" id="pendingBox"><span id="pendingText"></span><button type="button" id="pendingBtn">지금 보내기</button></div>
+
+      <!-- 숙제 내기 -->
+      <div id="tab-hw" style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="step">① 언제 숙제인가요?</div>
+          <div class="seg" style="grid-template-columns:1fr 1fr" id="weekOpts"></div>
+          <div class="step">② 무슨 요일 숙제인가요?</div>
+          <div class="seg" id="dayOpts"></div>
+          <div class="step">③ 어떤 숙제인가요?</div>
+          <div class="seg" style="grid-template-columns:1fr 1fr" id="itemOpts"></div>
+        </div>
+
+        <div class="card rec" id="recCard">
+          <div class="summary muted" id="summary">위에서 주, 요일, 숙제를 골라 주세요</div>
+
+          <div id="st-idle" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <button class="mic" id="startBtn" type="button" aria-label="녹음 시작" disabled>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+            </button>
+            <span class="hint" id="idleHint">마이크를 누르면 녹음이 시작돼요</span>
+          </div>
+
+          <div id="st-rec" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+            <button class="mic stop" id="stopBtn" type="button" aria-label="녹음 끝내기">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            </button>
+            <span class="timer" id="timer">00:00</span>
+            <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+            <span class="hint">녹음 중이에요 · 최대 5분 · 다 읽으면 네모 버튼</span>
+          </div>
+
+          <div id="st-done" class="hidden" style="display:flex;flex-direction:column;gap:10px;width:100%">
+            <audio id="player" controls preload="auto"></audio>
+            <button class="big" id="sendBtn" type="button">선생님께 보내기</button>
+            <button class="ghost" id="redoBtn" type="button">다시 녹음하기</button>
+          </div>
+
+          <div id="st-sending" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div class="spinner" aria-hidden="true"></div>
+            <b style="color:var(--blue)" id="sendingText">선생님께 보내는 중이에요…</b>
+            <span class="hint">화면을 닫지 말고 기다려 주세요</span>
+          </div>
+
+          <div id="st-ok" class="hidden" style="display:flex;flex-direction:column;gap:10px;width:100%">
+            <div class="ok" role="status">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6"/></svg>
+              <b>선생님께 잘 도착했어요</b><span id="okSub"></span>
+            </div>
+            <button class="ghost" id="againBtn" type="button">다른 숙제 녹음하기</button>
+          </div>
+
+          <div id="st-fail" class="hidden" style="display:flex;flex-direction:column;gap:10px;width:100%">
+            <div class="fail" role="alert"><b>보내지 못했어요</b><span id="failMsg"></span><span class="hint" style="text-align:left">녹음은 지워지지 않았어요.</span></div>
+            <button class="big" id="retryBtn" type="button" style="background:var(--orange)">다시 보내기</button>
+            <button class="ghost" id="redo2Btn" type="button">처음부터 다시 녹음하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 제출 기록 -->
+      <div id="tab-log" class="hidden" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+    <nav class="tabs">
+      <button type="button" class="on" id="tabBtn-hw">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>숙제 내기</button>
+      <button type="button" id="tabBtn-log">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>내 제출 기록</button>
+    </nav>
+  </section>
+
+  <section class="center hidden" id="scr-setup">
+    <h1 style="font-size:20px">설정이 필요해요</h1>
+    <p class="kicker">index.html 맨 아래의 API_URL에 Apps Script 학생용 웹 앱 주소를 넣어 주세요.</p>
+  </section>
+  <section class="center" id="scr-loading"><div class="spinner" style="align-self:center"></div></section>
+</div>
+
+<div class="toast hidden" id="toast" role="status"></div>
+<div class="modalbg hidden" id="modalbg"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+
+<script>
+/* ============================================================
+ *  여기에 Apps Script "학생용" 웹 앱 주소를 붙여넣으세요.
+ *  예: https://script.google.com/macros/s/AKfy..../exec
+ * ============================================================ */
+var API_URL = window.__API_URL__ || 'https://script.google.com/macros/s/AKfycbyegztzkvRAn-zxpgijJL7T19CCvXgUVU7W6pPirNYQJvCkKrLfS5ejDH8sLIOtOAep/exec';
+
+var MAX_SEC = 300;
+var TOKEN_KEY = 'pj_m1_token';
+var S = { token:null, status:null, pick:{ week:null, day:null, item:null }, phase:'idle', blob:null, mime:'', dur:0, clientId:null, missedQueue:[], busy:false };
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- 작은 도구 ---------- */
+function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){ return null; } }
+var toastT;
+function toast(m){ var t=$('toast'); t.textContent=m; t.classList.remove('hidden'); clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.add('hidden'); },3200); }
+function md(d){ var p=d.split('-'); return Number(p[1])+'/'+Number(p[2]); }
+function fmt(s){ s=Math.max(0,Math.floor(s)); return (s<600?'0':'')+Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60); }
+function uuid(){ if(window.crypto&&crypto.randomUUID) return crypto.randomUUID(); return 'x'+Date.now().toString(16)+Math.random().toString(16).slice(2,12); }
+function show(id){ ['scr-login','scr-pw','scr-app','scr-setup','scr-loading'].forEach(function(x){ $(x).classList.toggle('hidden', x!==id); }); }
+function dayName(d){ return d+'요일'; }
+
+function api(action, data, timeoutMs){
+  var body=Object.assign({ action:action, token:S.token }, data||{});
+  var ctrl=('AbortController' in window)?new AbortController():null;
+  var t=setTimeout(function(){ ctrl&&ctrl.abort(); }, timeoutMs||45000);
+  return fetch(API_URL,{ method:'POST', body:JSON.stringify(body), redirect:'follow', signal:ctrl?ctrl.signal:undefined })
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return { ok:false, code:'NETWORK', error: navigator.onLine===false ? '인터넷이 끊겼어요. 와이파이나 데이터를 확인해 주세요.' : '서버에 연결하지 못했어요. 잠시 후 다시 해 주세요.' }; })
+    .then(function(r){ clearTimeout(t); return r; });
+}
+
+/* ---------- 못 보낸 녹음 보관 (폰 안에 저장) ---------- */
+var IDB=null;
+function idb(){
+  if(IDB) return IDB;
+  IDB=new Promise(function(res){
+    try{
+      var rq=indexedDB.open('pj-m1-pending',1);
+      rq.onupgradeneeded=function(){ rq.result.createObjectStore('p',{keyPath:'clientId'}); };
+      rq.onsuccess=function(){ res(rq.result); };
+      rq.onerror=function(){ res(null); };
+    }catch(e){ res(null); }
+  });
+  return IDB;
+}
+function pPut(o){ return idb().then(function(d){ if(!d) return; return new Promise(function(r){ var tx=d.transaction('p','readwrite'); tx.objectStore('p').put(o); tx.oncomplete=r; tx.onerror=r; }); }); }
+function pDel(id){ return idb().then(function(d){ if(!d) return; return new Promise(function(r){ var tx=d.transaction('p','readwrite'); tx.objectStore('p').delete(id); tx.oncomplete=r; tx.onerror=r; }); }); }
+function pAll(){ return idb().then(function(d){ if(!d) return []; return new Promise(function(r){ var q=d.transaction('p','readonly').objectStore('p').getAll(); q.onsuccess=function(){ r(q.result||[]); }; q.onerror=function(){ r([]); }; }); }); }
+
+function blobToB64(blob){
+  return new Promise(function(res,rej){ var fr=new FileReader(); fr.onload=function(){ res(String(fr.result).split(',')[1]||''); }; fr.onerror=rej; fr.readAsDataURL(blob); });
+}
+
+/* 녹음 하나를 서버로 보냄 (실패하면 자동으로 2번 더) */
+function upload(p){
+  return blobToB64(p.blob).then(function(b64){
+    var tries=0;
+    function go(){
+      tries++;
+      return api('submit',{ clientId:p.clientId, weekStart:p.weekStart, day:p.day, item:p.item, durationSec:p.durationSec, mimeType:p.mimeType, audio:b64 }, 120000)
+        .then(function(r){
+          if(!r.ok && r.code==='NETWORK' && tries<3) return new Promise(function(z){ setTimeout(z,1500*tries); }).then(go);
+          return r;
+        });
+    }
+    return go();
+  }).then(function(r){
+    if(r.ok) return pDel(p.clientId).then(function(){ return r; });
+    if(r.code!=='NETWORK' && r.code!=='AUTH') return pDel(p.clientId).then(function(){ return r; }); // 고칠 수 없는 오류는 보관함에서 뺌
+    return r;
+  });
+}
+
+function refreshPending(){
+  return pAll().then(function(list){
+    var sid=S.status&&S.status.student.id;
+    var mine=list.filter(function(x){ return x.sid===sid; });
+    $('pendingBox').classList.toggle('hidden', !mine.length);
+    $('pendingText').textContent='아직 못 보낸 녹음이 '+mine.length+'개 있어요';
+    return mine;
+  });
+}
+function sendPending(silent){
+  return refreshPending().then(function(list){
+    if(!list.length) return;
+    var chain=Promise.resolve(), okN=0;
+    list.forEach(function(p){ chain=chain.then(function(){ return upload(p).then(function(r){ if(r.ok) okN++; }); }); });
+    return chain.then(function(){
+      if(okN){ toast('못 보냈던 녹음 '+okN+'개를 선생님께 보냈어요.'); loadStatus(); }
+      else if(!silent) toast('아직 보내지 못했어요. 인터넷을 확인해 주세요.');
+      return refreshPending();
+    });
+  });
+}
+
+/* ---------- 로그인 ---------- */
+$('loginBtn').onclick=function(){
+  var name=$('name').value.trim(), pw=$('pw').value;
+  if(!name||!pw){ $('loginErr').textContent='이름과 비밀번호를 입력해 주세요.'; return; }
+  $('loginBtn').disabled=true; $('loginErr').textContent='';
+  api('login',{ name:name, password:pw }).then(function(r){
+    $('loginBtn').disabled=false;
+    if(!r.ok){ $('loginErr').textContent=r.error; return; }
+    S.token=r.token; store(TOKEN_KEY,r.token); $('pw').value='';
+    if(r.mustChange){ $('pwHello').textContent=r.student.name+' 학생, 반가워요!'; $('np1').value=''; $('np2').value=''; $('pwErr').textContent=''; show('scr-pw'); }
+    else enterApp();
+  });
+};
+['name','pw'].forEach(function(id){ $(id).addEventListener('keydown',function(e){ if(e.key==='Enter') $('loginBtn').click(); }); });
+
+$('pwBtn').onclick=function(){
+  var a=$('np1').value, b=$('np2').value;
+  if(a.length<4){ $('pwErr').textContent='4자리 이상으로 정해 주세요.'; return; }
+  if(a==='1234'){ $('pwErr').textContent='1234는 쓸 수 없어요. 다른 비밀번호로 정해 주세요.'; return; }
+  if(a!==b){ $('pwErr').textContent='두 번 입력한 비밀번호가 달라요.'; return; }
+  $('pwBtn').disabled=true;
+  api('changePassword',{ newPassword:a }).then(function(r){
+    $('pwBtn').disabled=false;
+    if(!r.ok){ $('pwErr').textContent=r.error; return; }
+    toast('새 비밀번호로 바꿨어요! 다음부터 이 비밀번호로 들어와요.'); enterApp();
+  });
+};
+$('pwSkip').onclick=function(){ toast('비밀번호는 다음에 로그인할 때 바꿀 수 있어요.'); enterApp(); };
+
+$('logout').onclick=function(){
+  if(S.phase==='recording'||S.phase==='sending'){ toast('녹음이나 전송이 끝난 뒤에 로그아웃해 주세요.'); return; }
+  store(TOKEN_KEY,null); S.token=null; S.status=null; resetRec(); show('scr-login');
+};
+
+/* ---------- 앱 ---------- */
+function enterApp(){
+  show('scr-app'); switchTab('hw');
+  loadStatus().then(function(ok){ if(ok){ sendPending(true); askMissed(); } });
+}
+function loadStatus(){
+  return api('status').then(function(r){
+    if(!r.ok){
+      if(r.code==='AUTH'){ store(TOKEN_KEY,null); S.token=null; show('scr-login'); $('loginErr').textContent='다시 로그인해 주세요.'; return false; }
+      toast(r.error); return false;
+    }
+    S.status=r;
+    $('meName').textContent=r.student.name; $('meCls').textContent=r.student.cls+' · '+r.student.days.join('·');
+    var valid=r.weeks.some(function(w){ return w.weekStart===S.pick.week; });
+    if(!valid){ S.pick.week=r.weeks[0].weekStart; S.pick.day=null; }
+    renderPicker(); renderLog();
+    return true;
+  });
+}
+
+function weekObj(){ var w=null; (S.status?S.status.weeks:[]).forEach(function(x){ if(x.weekStart===S.pick.week) w=x; }); return w; }
+function dayObj(){ var w=weekObj(), d=null; if(w) w.days.forEach(function(x){ if(x.day===S.pick.day) d=x; }); return d; }
+
+function renderPicker(){
+  var st=S.status; if(!st) return;
+  var locked = S.phase!=='idle' && S.phase!=='ok';
+  $('weekOpts').innerHTML=st.weeks.map(function(w){
+    return '<button type="button" class="opt'+(w.weekStart===S.pick.week?' on':'')+'" data-w="'+w.weekStart+'"'+(locked?' disabled':'')+'>'+w.label+'<small>'+md(w.weekStart)+' – '+md(w.weekEnd)+'</small></button>';
+  }).join('');
+  var w=weekObj();
+  $('dayOpts').style.gridTemplateColumns='repeat('+st.student.days.length+',1fr)';
+  $('dayOpts').innerHTML=w.days.map(function(d){
+    var tag = d.items.length ? '<span class="tag">✓ 냈어요</span>' : d.noHw ? '<span class="tag no">숙제 없음</span>' : '<small>'+md(d.date)+(d.today?' 오늘':'')+'</small>';
+    return '<button type="button" class="opt'+(d.day===S.pick.day?' on':'')+'" data-d="'+d.day+'"'+(locked?' disabled':'')+'>'+d.day+tag+'</button>';
+  }).join('');
+  var dd=dayObj();
+  $('itemOpts').innerHTML=st.items.map(function(it){
+    var done = dd && dd.items.indexOf(it)>=0;
+    return '<button type="button" class="opt'+(it===S.pick.item?' on':'')+'" data-i="'+it+'"'+(locked?' disabled':'')+'>'+it+(done?'<span class="tag">✓ 냈어요</span>':'')+'</button>';
+  }).join('');
+  Array.prototype.forEach.call($('weekOpts').children,function(b){ b.onclick=function(){ S.pick.week=b.getAttribute('data-w'); S.pick.day=null; afterPick(); }; });
+  Array.prototype.forEach.call($('dayOpts').children,function(b){ b.onclick=function(){ S.pick.day=b.getAttribute('data-d'); afterPick(); }; });
+  Array.prototype.forEach.call($('itemOpts').children,function(b){ b.onclick=function(){ S.pick.item=b.getAttribute('data-i'); afterPick(); }; });
+  renderSummary();
+}
+function afterPick(){ if(S.phase==='ok') resetRec(); renderPicker(); }
+function renderSummary(){
+  var w=weekObj(), ready=!!(w && S.pick.day && S.pick.item);
+  var el=$('summary');
+  if(ready){ el.textContent=w.label+' '+dayName(S.pick.day)+' 숙제 · '+S.pick.item; el.classList.remove('muted'); }
+  else { el.textContent='위에서 주, 요일, 숙제를 골라 주세요'; el.classList.add('muted'); }
+  $('startBtn').disabled=!ready;
+  $('idleHint').textContent= ready ? '마이크를 누르면 녹음이 시작돼요' : '①②③을 먼저 골라 주세요';
+}
+
+/* ---------- 녹음 ---------- */
+var rec=null, chunks=[], stream=null, t0=0, tick=null, actx=null, analyser=null, raf=null;
+function pickMime(){
+  var c=['audio/webm;codecs=opus','audio/webm','audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/aac','audio/ogg;codecs=opus'];
+  if(!window.MediaRecorder) return null;
+  for(var i=0;i<c.length;i++){ try{ if(MediaRecorder.isTypeSupported(c[i])) return c[i]; }catch(e){} }
+  return '';
+}
+function micError(e){
+  var n=e&&e.name;
+  if(n==='NotAllowedError'||n==='SecurityError') return '마이크가 막혀 있어요. 주소창 옆 자물쇠(또는 설정) > 마이크 > 허용으로 바꾸고, 폰 설정 > 애플리케이션 > Chrome > 권한 > 마이크도 켜 주세요.';
+  if(n==='NotFoundError'||n==='OverconstrainedError') return '마이크를 찾을 수 없어요. 이어폰을 뺐다 꽂거나 다른 기기로 해 주세요.';
+  if(n==='NotReadableError'||n==='AbortError') return '다른 앱이 마이크를 쓰고 있어요. 통화나 다른 녹음 앱을 끄고 다시 해 주세요.';
+  return '녹음을 시작하지 못했어요. 크롬을 최신으로 업데이트하고 다시 해 주세요.';
+}
+function setPhase(p){
+  S.phase=p;
+  ['idle','rec','done','sending','ok','fail'].forEach(function(x){
+    var map={idle:'idle',recording:'rec',recorded:'done',sending:'sending',ok:'ok',fail:'fail'};
+    $('st-'+x).classList.toggle('hidden', map[p]!==x);
+  });
+  renderPicker();
+}
+$('startBtn').onclick=function(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('이 브라우저에서는 녹음이 안 돼요. 크롬이나 사파리로 열어 주세요.'); return; }
+  var mime=pickMime();
+  if(mime===null){ toast('이 브라우저에서는 녹음이 안 돼요. 크롬을 최신으로 업데이트해 주세요.'); return; }
+  $('startBtn').disabled=true;
+  navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:true, noiseSuppression:true } }).then(function(s){
+    stream=s; chunks=[];
+    var opts={ audioBitsPerSecond:64000 }; if(mime) opts.mimeType=mime;
+    try{ rec=new MediaRecorder(s,opts); }catch(e){ rec=new MediaRecorder(s); }
+    rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+    rec.onstop=function(){
+      var type=rec.mimeType||mime||'audio/webm';
+      S.blob=new Blob(chunks,{ type:type }); S.mime=type;
+      S.dur=Math.round((Date.now()-t0)/1000);
+      stopStream();
+      if(S.blob.size<1000){ toast('녹음이 비어 있어요. 마이크를 확인하고 다시 해 주세요.'); resetRec(); return; }
+      $('player').src=URL.createObjectURL(S.blob);
+      setPhase('recorded');
+    };
+    rec.start(1000); t0=Date.now(); setPhase('recording'); $('timer').textContent='00:00';
+    tick=setInterval(function(){ var sec=(Date.now()-t0)/1000; $('timer').textContent=fmt(sec); if(sec>=MAX_SEC){ toast('5분이 되어 녹음을 멈췄어요.'); stopRec(); } },250);
+    startMeter(s);
+    window.onbeforeunload=function(){ return '녹음 중이에요.'; };
+  }).catch(function(e){ $('startBtn').disabled=false; toast(micError(e)); showMicHelp(micError(e)); });
+};
+function startMeter(s){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
+    var src=actx.createMediaStreamSource(s); analyser=actx.createAnalyser(); analyser.fftSize=512; src.connect(analyser);
+    var buf=new Uint8Array(analyser.fftSize);
+    (function loop(){ analyser.getByteTimeDomainData(buf); var m=0; for(var i=0;i<buf.length;i++){ var v=Math.abs(buf[i]-128); if(v>m) m=v; } $('meter').style.width=Math.min(100,m/64*100)+'%'; raf=requestAnimationFrame(loop); })();
+  }catch(e){}
+}
+function stopStream(){
+  clearInterval(tick); tick=null; if(raf) cancelAnimationFrame(raf); raf=null;
+  try{ actx&&actx.close(); }catch(e){} actx=null;
+  if(stream) stream.getTracks().forEach(function(t){ t.stop(); }); stream=null;
+  window.onbeforeunload=null;
+}
+function stopRec(){ if(rec&&rec.state!=='inactive') rec.stop(); }
+$('stopBtn').onclick=stopRec;
+function resetRec(){
+  if(rec&&rec.state!=='inactive'){ rec.onstop=null; rec.stop(); }
+  stopStream(); S.blob=null; S.clientId=null; $('player').removeAttribute('src'); setPhase('idle');
+}
+$('redoBtn').onclick=resetRec; $('redo2Btn').onclick=resetRec;
+$('againBtn').onclick=function(){ S.pick.item=null; resetRec(); };
+
+$('sendBtn').onclick=function(){ send(); };
+$('retryBtn').onclick=function(){ send(); };
+function send(){
+  var w=weekObj(); if(!w||!S.pick.day||!S.pick.item||!S.blob) return;
+  if(!S.clientId) S.clientId=uuid();
+  var p={ clientId:S.clientId, sid:S.status.student.id, weekStart:w.weekStart, day:S.pick.day, item:S.pick.item, durationSec:S.dur, mimeType:S.mime, blob:S.blob, label:w.label+' '+S.pick.day+'요일 '+S.pick.item, createdAt:Date.now() };
+  setPhase('sending');
+  window.onbeforeunload=function(){ return '녹음을 보내는 중이에요.'; };
+  pPut(p).then(function(){ return upload(p); }).then(function(r){
+    window.onbeforeunload=null;
+    if(r.ok){
+      $('okSub').textContent=p.label+' · '+fmt(p.durationSec);
+      setPhase('ok'); S.blob=null; S.clientId=null;
+      loadStatus(); refreshPending();
+    } else if(r.code==='AUTH'){
+      toast('다시 로그인해 주세요. 녹음은 폰에 저장해 뒀어요.'); store(TOKEN_KEY,null); show('scr-login');
+    } else {
+      $('failMsg').textContent=r.error||'잠시 후 다시 보내 주세요.'; setPhase('fail');
+      if(r.code!=='NETWORK'){ $('retryBtn').classList.add('hidden'); } else { $('retryBtn').classList.remove('hidden'); }
+      refreshPending();
+    }
+  });
+}
+$('pendingBtn').onclick=function(){ sendPending(false); };
+
+function showMicHelp(msg){
+  modal('<h2>마이크를 쓸 수 없어요</h2><div style="font-size:15px;line-height:1.6">'+msg+'</div><button class="big" type="button" data-x>알겠어요</button>', function(m){ m.querySelector('[data-x]').onclick=closeModal; });
+}
+
+/* ---------- 빠진 숙제 물어보기 ---------- */
+function modal(html,bind){ $('modal').innerHTML=html; $('modalbg').classList.remove('hidden'); bind&&bind($('modal')); }
+function closeModal(){ $('modalbg').classList.add('hidden'); $('modal').innerHTML=''; }
+function askMissed(){
+  S.missedQueue=(S.status&&S.status.missed||[]).slice();
+  nextMissed();
+}
+function nextMissed(){
+  var m=S.missedQueue.shift();
+  if(!m){ closeModal(); return; }
+  modal('<h2>혹시 '+m.weekLabel+' '+dayName(m.day)+'('+md(m.date)+') 숙제를 까먹었나요?</h2>'+
+    '<span class="hint" style="text-align:left">그 날 낸 숙제가 없어요.</span>'+
+    '<button class="big" type="button" data-go>그 날 숙제 하러 가기</button>'+
+    '<button class="ghost" type="button" data-no>숙제가 없었어요</button>', function(el){
+      el.querySelector('[data-go]').onclick=function(){
+        S.missedQueue=[]; closeModal(); switchTab('hw');
+        S.pick.week=m.weekStart; S.pick.day=m.day; S.pick.item=null; if(S.phase==='ok') resetRec(); renderPicker();
+        toast('어떤 숙제인지 고르고 녹음해 주세요.');
+      };
+      var no=el.querySelector('[data-no]');
+      no.onclick=function(){
+        no.disabled=true; no.textContent='저장 중…';
+        api('noHomework',{ weekStart:m.weekStart, day:m.day }).then(function(r){
+          if(r.ok){ S.status=r; renderPicker(); renderLog(); nextMissed(); }
+          else { no.disabled=false; no.textContent='숙제가 없었어요'; toast(r.error); }
+        });
+      };
+    });
+}
+
+/* ---------- 제출 기록 ---------- */
+function renderLog(){
+  var st=S.status; if(!st) return;
+  $('tab-log').innerHTML=st.weeks.map(function(w){
+    return '<div class="card week"><h3>'+w.label+' <span class="hint">'+md(w.weekStart)+' – '+md(w.weekEnd)+'</span></h3>'+
+      w.days.map(function(d){
+        var stamp=d.items.length?'<span class="stamp">제출</span>':'<span class="stamp empty"></span>';
+        var info=d.items.length?'<b>'+d.items.join(', ')+'</b>':d.noHw?'<span class="muted">숙제 없음</span>':d.past?'<span class="late">아직 안 냈어요</span>':'<span class="muted">'+(d.today?'오늘':'예정')+'</span>';
+        return '<div class="dayrow"><div class="dlabel">'+d.day+'<small>'+md(d.date)+'</small></div>'+stamp+'<div class="dinfo">'+info+'</div></div>';
+      }).join('')+'</div>';
+  }).join('');
+}
+
+/* ---------- 탭 ---------- */
+function switchTab(t){
+  $('tab-hw').classList.toggle('hidden',t!=='hw'); $('tab-log').classList.toggle('hidden',t!=='log');
+  $('tabBtn-hw').classList.toggle('on',t==='hw'); $('tabBtn-log').classList.toggle('on',t==='log');
+}
+$('tabBtn-hw').onclick=function(){ switchTab('hw'); };
+$('tabBtn-log').onclick=function(){ switchTab('log'); };
+
+/* ---------- 카카오톡 ---------- */
+if(/KAKAOTALK/i.test(navigator.userAgent)){
+  $('kakaoBanner').classList.remove('hidden');
+  $('openExternal').onclick=function(){ location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(location.href); };
+}
+
+/* ---------- 시작 ---------- */
+(function start(){
+  if(API_URL.indexOf('여기에_')>=0){ show('scr-setup'); return; }
+  S.token=store(TOKEN_KEY);
+  if(S.token){ enterApp(); } else { show('scr-login'); }
+})();
+</script>
+</body>
+</html>

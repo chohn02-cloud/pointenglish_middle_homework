@@ -352,8 +352,9 @@ function uuid(){ if(window.crypto&&crypto.randomUUID) return crypto.randomUUID()
 function show(id){ ['scr-login','scr-pw','scr-app','scr-setup','scr-loading'].forEach(function(x){ $(x).classList.toggle('hidden', x!==id); }); }
 function dayName(d){ return d+'요일'; }
 
-function api(action, data, timeoutMs){
-  var body=Object.assign({ action:action, token:S.token }, data||{});
+/* 서버와 주고받기: 기본은 fetch, 크롬 등에서 구글 중간 주소가 막히면 숨은 창(iframe) 방식으로 자동 전환 */
+var TRANSPORT_KEY='pj_m1_transport';
+function apiFetch(body, timeoutMs){
   var ctrl=('AbortController' in window)?new AbortController():null;
   var t=setTimeout(function(){ ctrl&&ctrl.abort(); }, timeoutMs||45000);
   return fetch(API_URL,{ method:'POST', body:JSON.stringify(body), redirect:'follow', credentials:'omit', cache:'no-store', signal:ctrl?ctrl.signal:undefined })
@@ -361,18 +362,58 @@ function api(action, data, timeoutMs){
       return r.text().then(function(txt){
         try{ return JSON.parse(txt); }
         catch(e){
-          var login=/accounts\.google\.com|ServiceLogin|로그인/.test(txt);
-          return { ok:false, code:'BADRESP', error: login ? '서버가 로그인을 요구하고 있어요. 선생님께 알려 주세요. (배포 액세스를 "모든 사용자"로)' : '서버 응답이 이상해요. 선생님께 알려 주세요.', detail:'B'+r.status+' '+(r.url||'').slice(0,60)+' '+txt.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,80) };
+          var login=/accounts\.google\.com|ServiceLogin/.test(txt);
+          return { ok:false, code:'BADRESP', status:r.status, error: login ? '서버가 로그인을 요구하고 있어요. 선생님께 알려 주세요. (배포 액세스를 "모든 사용자"로)' : '서버 응답이 이상해요. 선생님께 알려 주세요.', detail:'B'+r.status+' '+(r.url||'').slice(0,60)+' '+txt.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').slice(0,80) };
         }
       });
     })
     .catch(function(e){
       var aborted = e && e.name==='AbortError';
-      return { ok:false, code:'NETWORK',
+      return { ok:false, code:'NETWORK', aborted:aborted,
         error: navigator.onLine===false ? '인터넷이 끊겼어요. 와이파이나 데이터를 확인해 주세요.' : aborted ? '서버가 너무 오래 걸려요. 잠시 후 다시 해 주세요.' : '서버에 연결하지 못했어요. 잠시 후 다시 해 주세요.',
         detail:'N '+(e&&e.name)+': '+(e&&e.message) };
     })
     .then(function(r){ clearTimeout(t); return r; });
+}
+function apiFrame(body, timeoutMs){
+  return new Promise(function(resolve){
+    var rid='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    var name='pjf_'+rid;
+    var ifr=document.createElement('iframe'); ifr.name=name; ifr.title='전송'; ifr.setAttribute('aria-hidden','true');
+    ifr.style.cssText='position:absolute;width:1px;height:1px;border:0;left:-9999px;top:0';
+    document.body.appendChild(ifr);
+    var form=document.createElement('form'); form.method='POST'; form.action=API_URL; form.target=name; form.style.display='none';
+    [['payload',JSON.stringify(Object.assign({ rid:rid }, body))],['transport','iframe']].forEach(function(kv){
+      var i=document.createElement('input'); i.type='hidden'; i.name=kv[0]; i.value=kv[1]; form.appendChild(i);
+    });
+    document.body.appendChild(form);
+    var done=false;
+    function finish(r){ if(done) return; done=true; window.removeEventListener('message',onMsg); clearTimeout(t); setTimeout(function(){ try{ ifr.remove(); form.remove(); }catch(e){} },1500); resolve(r); }
+    function onMsg(ev){
+      var o=String(ev.origin||'');
+      if(!/\.googleusercontent\.com$|^https:\/\/script\.google\.com$/.test(o)) return;
+      var d=ev.data; if(d && d.pjRid===rid && d.res) finish(d.res);
+    }
+    window.addEventListener('message',onMsg);
+    var t=setTimeout(function(){ finish({ ok:false, code:'NETWORK', error: navigator.onLine===false ? '인터넷이 끊겼어요. 와이파이나 데이터를 확인해 주세요.' : '서버가 응답하지 않아요. 잠시 후 다시 해 주세요.', detail:'F timeout' }); }, timeoutMs||45000);
+    form.submit();
+  });
+}
+function api(action, data, timeoutMs){
+  var body=Object.assign({ action:action, token:S.token }, data||{});
+  if(store(TRANSPORT_KEY)==='iframe') return apiFrame(body, timeoutMs);
+  // 첫 시도는 짧게 기다리고(작은 요청 15초), 막히거나 늦으면 숨은 창 방식으로 다시 보냄
+  var first = action==='submit' ? (timeoutMs||120000) : 15000;
+  return apiFetch(body, first).then(function(r){
+    var blocked = (r.code==='BADRESP' && r.status!==200) || (r.code==='NETWORK' && navigator.onLine!==false);
+    if(!blocked) return r;
+    // 같은 녹음이 두 번 저장되지 않도록 submit은 clientId로 서버가 중복을 막아 줌
+    return apiFrame(body, timeoutMs).then(function(r2){
+      if(r2 && (r2.ok || r2.code!=='NETWORK')) store(TRANSPORT_KEY,'iframe');
+      if(!r2.ok && r2.code==='NETWORK') r2.detail=(r.detail||'')+' / '+(r2.detail||'');
+      return r2;
+    });
+  });
 }
 
 /* ---------- 못 보낸 녹음 보관 (폰 안에 저장) ---------- */
